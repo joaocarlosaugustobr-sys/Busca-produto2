@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Achei na Shopee</title>
+<style>
+  body {
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(135deg, #ff5f6d, #ffc371);
+    color: white;
+    text-align: center;
+    padding: 50px;
+  }
+  input, button {
+    padding: 10px;
+    font-size: 16px;
+    margin: 10px;
+    border-radius: 5px;
+    border: none;
+  }
+  button {
+    background-color: #ff3d6b;
+    color: white;
+    cursor: pointer;
+  }
+  button:hover {
+    background-color: #ff1f4b;
+  }
+  #resultado {
+    margin-top: 20px;
+  }
+  a {
+    color: #fff;
+    text-decoration: underline;
+  }
+</style>
+</head>
+<body>
+<h1>Achei na Shopee</h1>
+<p>Digite o código do produto:</p>
+<input type="text" id="codigo" placeholder="Código do produto">
+<button onclick="buscarProduto()">Buscar</button>
+<p id="resultado"></p>
+
+<script>
+// A URL foi corrigida para o formato de download direto
+const csvUrl = 'https://drive.google.com/uc?export=download&id=1UHTPaj4Vjy7uX5ne-sKLbPLcXCyF40PQ';
+let produtos = {};
+
+async function carregarProdutos() {
+  try {
+    const resposta = await fetch(csvUrl);
+    const texto = await resposta.text();
+    const linhas = texto.split('\n');
+
+    linhas.forEach((linha, index) => {
+      if(index === 0) return; // pula cabeçalho
+      const [codigo, ...resto] = linha.split(','); // pega tudo depois da primeira vírgula como link
+      const link = resto.join(','); // caso o link tenha vírgula
+      if(codigo && link) produtos[codigo.trim()] = link.trim();
+    });
+
+  } catch (error) {
+    console.error("Erro ao carregar produtos:", error);
+  }
+}
+
+function buscarProduto() {
+  const codigo = document.getElementById("codigo").value.trim();
+  const resultado = document.getElementById("resultado");
+
+  if(!codigo) {
+    resultado.innerHTML = "Digite um código válido!";
+    return;
+  }
+
+  if(produtos[codigo]) {
+    resultado.innerHTML = `Link do produto: <a href="${produtos[codigo]}" target="_blank">${produtos[codigo]}</a>`;
+  } else {
+    resultado.innerHTML = "Produto não encontrado 😢";
+  }
+}
+
+carregarProdutos();
+</script>
+</body>
+</html>
