@@ -1,89 +1,157 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Achei na Shopee</title>
-<style>
-  body {
-    font-family: 'Arial', sans-serif;
-    background: linear-gradient(135deg, #ff5f6d, #ffc371);
-    color: white;
-    text-align: center;
-    padding: 50px;
-  }
-  input, button {
-    padding: 10px;
-    font-size: 16px;
-    margin: 10px;
-    border-radius: 5px;
-    border: none;
-  }
-  button {
-    background-color: #ff3d6b;
-    color: white;
-    cursor: pointer;
-  }
-  button:hover {
-    background-color: #ff1f4b;
-  }
-  #resultado {
-    margin-top: 20px;
-  }
-  a {
-    color: #fff;
-    text-decoration: underline;
-  }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Achei na Shopee</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(to right, #ffffff, #ffe4e1);
+            text-align: center;
+            padding: 50px;
+            color: black;
+            font-size: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #ff69b4;
+            margin-bottom: 20px;
+        }
+        input[type="text"] {
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            width: 70%;
+            margin-right: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #ff69b4;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover {
+            background-color: #ff85c6;
+        }
+        #resultado {
+            margin-top: 20px;
+            font-weight: bold;
+            color: #333;
+        }
+        .produto-item {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            text-align: left;
+            display: flex;
+            align-items: center;
+        }
+        .produto-item img {
+            width: 80px;
+            height: 80px;
+            margin-right: 15px;
+            border-radius: 5px;
+            object-fit: cover;
+        }
+        .produto-item a {
+            word-break: break-all;
+        }
+    </style>
 </head>
 <body>
-<h1>Achei na Shopee</h1>
-<p>Digite o código do produto:</p>
-<input type="text" id="codigo" placeholder="Código do produto">
-<button onclick="buscarProduto()">Buscar</button>
-<p id="resultado"></p>
+    <div class="container">
+        <h1>Achei na Shopee</h1>
+        <input type="text" id="codigo" placeholder="Digite o código do produto">
+        <button onclick="buscarProduto()">Buscar</button>
+        <div id="resultado"></div>
+    </div>
 
-<script>
-// A URL foi corrigida para o formato de download direto
-const csvUrl = 'https://joaocarlosaugustobr-sys.github.io/Busca-produto2/produtos.csv';
+    <div class="container" id="lista-produtos" style="margin-top: 20px;">
+        <h2>Lista de Produtos</h2>
+        <p>Carregando lista...</p>
+    </div>
 
-let produtos = {};
+    <script>
+    const csvUrl = 'https://joaocarlosaugustobr-sys.github.io/Busca-produto2/produtos.csv';
+    let produtos = {};
 
-async function carregarProdutos() {
-  try {
-    const resposta = await fetch(csvUrl);
-    const texto = await resposta.text();
-    const linhas = texto.split('\n');
+    async function carregarProdutos() {
+      try {
+        const resposta = await fetch(csvUrl);
+        const texto = await resposta.text();
+        const linhas = texto.split('\n').filter(linha => linha.trim() !== '');
 
-    linhas.forEach((linha, index) => {
-      if(index === 0) return; // pula cabeçalho
-      const [codigo, ...resto] = linha.split(','); // pega tudo depois da primeira vírgula como link
-      const link = resto.join(','); // caso o link tenha vírgula
-      if(codigo && link) produtos[codigo.trim()] = link.trim();
-    });
+        linhas.forEach((linha, index) => {
+          if (index === 0 && (linha.startsWith('codigo') || linha.startsWith('Código'))) return;
+          const [codigo, link, imagem] = linha.split(',');
+          if (codigo && link) {
+            produtos[codigo.trim()] = { link: link.trim(), imagem: imagem ? imagem.trim() : '' };
+          }
+        });
+        exibirTodosOsProdutos();
+      } catch (error) {
+        console.error("Erro ao carregar produtos:", error);
+        document.getElementById("lista-produtos").innerHTML = "Erro ao carregar a lista de produtos. Tente novamente mais tarde.";
+      }
+    }
 
-  } catch (error) {
-    console.error("Erro ao carregar produtos:", error);
-  }
-}
+    function buscarProduto() {
+      const codigo = document.getElementById("codigo").value.trim();
+      const resultado = document.getElementById("resultado");
 
-function buscarProduto() {
-  const codigo = document.getElementById("codigo").value.trim();
-  const resultado = document.getElementById("resultado");
+      if (!codigo) {
+        resultado.innerHTML = "Digite um código válido!";
+        return;
+      }
 
-  if(!codigo) {
-    resultado.innerHTML = "Digite um código válido!";
-    return;
-  }
+      const produtoEncontrado = produtos[codigo];
+      if (produtoEncontrado) {
+        const imgHtml = produtoEncontrado.imagem ? `<img src="${produtoEncontrado.imagem}" alt="Imagem do Produto" style="width:150px; height:auto; margin-top: 15px;">` : '';
+        const linkHtml = `<a href="${produtoEncontrado.link}" target="_blank">Clique aqui para ver o produto</a>`;
+        resultado.innerHTML = `Produto encontrado! <br>${imgHtml}<br>${linkHtml}`;
+      } else {
+        resultado.innerHTML = "Produto não encontrado 😢";
+      }
+    }
 
-  if(produtos[codigo]) {
-    resultado.innerHTML = `Link do produto: <a href="${produtos[codigo]}" target="_blank">${produtos[codigo]}</a>`;
-  } else {
-    resultado.innerHTML = "Produto não encontrado 😢";
-  }
-}
+    function exibirTodosOsProdutos() {
+      const listaDiv = document.getElementById("lista-produtos");
+      listaDiv.innerHTML = '<h2>Lista de Produtos</h2>';
+      const ul = document.createElement('ul');
+      ul.style.listStyle = 'none';
 
-carregarProdutos();
-</script>
+      for (const codigo in produtos) {
+        const produto = produtos[codigo];
+        const li = document.createElement('li');
+        li.className = 'produto-item';
+
+        const imgHtml = produto.imagem ? `<img src="${produto.imagem}" alt="Imagem do Produto">` : '';
+        const textoHtml = `
+          <div>
+            <strong>Código:</strong> ${codigo}<br>
+            <a href="${produto.link}" target="_blank">Clique aqui para ver</a>
+          </div>
+        `;
+
+        li.innerHTML = `${imgHtml} ${textoHtml}`;
+        ul.appendChild(li);
+      }
+      listaDiv.appendChild(ul);
+    }
+
+    carregarProdutos();
+    </script>
 </body>
 </html>
