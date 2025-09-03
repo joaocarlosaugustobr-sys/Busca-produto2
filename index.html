@@ -22,7 +22,7 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             margin-bottom: 20px;
         }
-        h1 { /* Este estilo é mantido por segurança caso a imagem não carregue */
+        h1 {
             color: #ff69b4;
             margin-bottom: 15px;
             font-size: 28px;
@@ -153,9 +153,9 @@
         const linhas = texto.split('\n').filter(linha => linha.trim() !== '');
 
         linhas.forEach(linha => {
-          const [codigo, link, imagem] = linha.split(',');
+          const [nome, codigo, link, imagem] = linha.split(',');
           if (codigo && link) {
-            produtos[codigo.trim()] = { link: link.trim(), imagem: imagem ? imagem.trim() : '' };
+            produtos[codigo.trim()] = { nome: nome.trim(), link: link.trim(), imagem: imagem ? imagem.trim() : '' };
           }
         });
         exibirTodosOsProdutos();
@@ -178,7 +178,7 @@
       if (produtoEncontrado) {
         const imgHtml = produtoEncontrado.imagem ? `<img src="${produtoEncontrado.imagem}" alt="Imagem do Produto" style="width:150px; height:auto; margin-top: 15px;">` : '';
         const linkHtml = `<a href="${produtoEncontrado.link}" target="_blank">Clique aqui para ver o produto</a>`;
-        resultado.innerHTML = `Produto encontrado! <br>${imgHtml}<br>${linkHtml}`;
+        resultado.innerHTML = `<strong>${produtoEncontrado.nome}</strong><br>Código: ${codigo}<br>${imgHtml}<br>${linkHtml}`;
       } else {
         resultado.innerHTML = "Produto não encontrado 😢";
       }
@@ -199,7 +199,8 @@
         const imgHtml = produto.imagem ? `<img src="${produto.imagem}" alt="Imagem do Produto">` : '';
         const textoHtml = `
           <div>
-            <strong>Código:</strong> ${codigo}<br>
+            <strong>${produto.nome}</strong><br>
+            Código: ${codigo}<br>
             <a href="${produto.link}" target="_blank">Clique aqui para ver</a>
           </div>
         `;
